@@ -73,40 +73,39 @@ async function fetchPlayers() {
 // Add a new player
 document.getElementById("playerForm").addEventListener("submit", async (event) => {
     event.preventDefault();
-
+  
     const playerName = document.getElementById("playerName").value;
     const playerImage = document.getElementById("playerImage").files[0];
-
+  
     // Validate inputs
     if (!playerName || !playerImage) {
-        alert("Please fill out all fields!");
-        return;
+      alert("Please fill out all fields!");
+      return;
     }
-
+  
     // Convert image to base64 for backend storage
     const reader = new FileReader();
     reader.readAsDataURL(playerImage);
     reader.onload = async () => {
-        const imageBase64 = reader.result;
-
-        try {
-            // Send player data to the backend
-            const response = await fetch(`${API_BASE_URL}/players`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: playerName, image: imageBase64 }),
-            });
-
-            if (response.ok) {
-                // Refresh the player list after adding a new player
-                fetchPlayers();
-                // Clear the form
-                document.getElementById("playerForm").reset();
-            } else {
-                alert("Failed to add player");
-            }
-        } catch (err) {
-            console.error("Error:", err);
+      const imageBase64 = reader.result;
+  
+      try {
+        // Send player data to the backend
+        const response = await fetch("http://localhost:5000/api/players", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: playerName, image: imageBase64 }),
+        });
+  
+        if (response.ok) {
+          alert("Player added successfully!");
+          fetchPlayers(); // Refresh the player list
+          document.getElementById("playerForm").reset(); // Clear the form
+        } else {
+          alert("Failed to add player");
         }
+      } catch (err) {
+        console.error("Error:", err);
+      }
     };
-});
+  });
