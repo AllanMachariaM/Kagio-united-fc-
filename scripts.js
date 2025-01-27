@@ -1,81 +1,112 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const matches = [
-        { date: '2024-07-10', opponent: 'Team A', location: 'Home' },
-        { date: '2024-07-17', opponent: 'Team B', location: 'Away' },
-        // Add more matches as needed
-    ];
+// Base URL for the backend API
+const API_BASE_URL = "http://localhost:5000/api";
 
-    const news = [
-        { date: '2024-07-09', title: 'Fixtures & Results', photo: '11.jpg' },
-        { date: '2024-07-09', title: 'Fixtures & Results', photo: '10.jpg' },
-        { date: '2024-06-25', title: 'Season Kickoff Event', photo: 'images/season-kickoff.jpg' },
-        { date: '2024-06-20', title: 'Player Transfer Updates', photo: 'images/player-transfer.jpg' },
-        { date: '2024-06-15', title: 'Training Camp Starts', photo: 'images/training-camp.jpg' },
-        { date: '2024-06-10', title: 'New Sponsorship Deal', photo: 'images/sponsorship-deal.jpg' },
-        { date: '2024-06-05', title: 'Community Outreach Program', photo: 'images/community-outreach.jpg' }
-        // Add more news as needed
-    ];    
+// Tab Navigation
+document.addEventListener("DOMContentLoaded", function () {
+    const tabLinks = document.querySelectorAll(".tab-link");
+    const sections = document.querySelectorAll(".section");
 
-    const matchList = document.getElementById('match-list');
-    matches.forEach(match => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${match.date}: Kagio United vs. ${match.opponent} (${match.location})`;
-        matchList.appendChild(listItem);
+    // Hide all sections except the first one (Home)
+    sections.forEach((section, index) => {
+        if (index !== 0) {
+            section.style.display = "none";
+        }
     });
 
-    const newsList = document.getElementById('news-list');
-    news.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `
-            <img src="${item.photo}" alt="${item.title}" class="news-photo">
-            <strong>${item.date}</strong> - ${item.title}
-        `;
-        newsList.appendChild(listItem);
-    });
+    // Add click event listeners to tab buttons
+    tabLinks.forEach((tab) => {
+        tab.addEventListener("click", function () {
+            const targetTab = this.getAttribute("data-tab");
 
-    const contactForm = document.getElementById('contact-form');
-    contactForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        alert('Thank you for your message!');
-        contactForm.reset();
-    });
-
-    const tabLinks = document.querySelectorAll('.tab-link');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabLinks.forEach(link => {
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            const targetTab = event.target.dataset.tab;
-
-            tabContents.forEach(content => {
-                if (content.id === targetTab) {
-                    content.classList.add('active');
-                    content.style.display = 'block';
-                } else {
-                    content.classList.remove('active');
-                    content.style.display = 'none';
-                }
+            // Hide all sections
+            sections.forEach((section) => {
+                section.style.display = "none";
             });
 
-            tabLinks.forEach(link => {
-                if (link.dataset.tab === targetTab) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
-            });
+            // Show the target section
+            document.getElementById(targetTab).style.display = "block";
+
+            // Optional: Add active class to the clicked tab
+            tabLinks.forEach((tab) => tab.classList.remove("active"));
+            this.classList.add("active");
         });
     });
 
-    // Set the initial active tab
-    document.querySelector('.tab-link[data-tab="overview"]').click();
+    // Fetch players when the page loads
+    fetchPlayers();
 });
 
+// Fetch and display players from the backend
+async function fetchPlayers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/players`);
+        const players = await response.json();
+        const playerList = document.getElementById("player-profiles-list");
 
+        // Clear existing content
+        playerList.innerHTML = "";
 
+        // Display each player
+        players.forEach((player) => {
+            const playerProfile = document.createElement("div");
+            playerProfile.classList.add("player-profile");
 
+            // Add player name
+            const nameElement = document.createElement("h3");
+            nameElement.textContent = player.name;
+            playerProfile.appendChild(nameElement);
 
+            // Add player image
+            const imageElement = document.createElement("img");
+            imageElement.src = player.image;
+            imageElement.alt = player.name;
+            playerProfile.appendChild(imageElement);
 
+            // Append the profile to the player list
+            playerList.appendChild(playerProfile);
+        });
+    } catch (err) {
+        console.error("Failed to fetch players:", err);
+    }
+}
 
+// Add a new player
+document.getElementById("playerForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
 
+    const playerName = document.getElementById("playerName").value;
+    const playerImage = document.getElementById("playerImage").files[0];
+
+    // Validate inputs
+    if (!playerName || !playerImage) {
+        alert("Please fill out all fields!");
+        return;
+    }
+
+    // Convert image to base64 for backend storage
+    const reader = new FileReader();
+    reader.readAsDataURL(playerImage);
+    reader.onload = async () => {
+        const imageBase64 = reader.result;
+
+        try {
+            // Send player data to the backend
+            const response = await fetch(`${API_BASE_URL}/players`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: playerName, image: imageBase64 }),
+            });
+
+            if (response.ok) {
+                // Refresh the player list after adding a new player
+                fetchPlayers();
+                // Clear the form
+                document.getElementById("playerForm").reset();
+            } else {
+                alert("Failed to add player");
+            }
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    };
+});
