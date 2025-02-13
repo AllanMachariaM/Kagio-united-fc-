@@ -15,6 +15,20 @@ const connection = mysql.createConnection({
 });
 
 // Add a new player
+app.get('/api/player/:id', (req, res) => {
+  const playerId = req.params.id;
+  const sql = 'SELECT * FROM players WHERE id = ?';
+  db.query(sql, [playerId], (err, result) => {
+      if (err) {
+          console.error('Error fetching player data:', err);
+          return res.status(500).json({ error: 'Database error' });
+      }
+      if (result.length === 0) {
+          return res.status(404).json({ error: 'Player not found' });
+      }
+      res.json(result[0]);
+  });
+});
 app.post("/api/players", (req, res) => {
   const { name, image } = req.body;
 
