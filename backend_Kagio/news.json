@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "title": "Kagio United Wins Championship",
+        "description": "Kagio United clinched the league title with a stunning victory in the final match.",
+        "image": "images/news1.jpg",
+        "date": "2023-10-15",
+        "link": "#"
+    },
+    {
+        "id": 2,
+        "title": "New Signing Announced",
+        "description": "Kagio United has signed a promising young midfielder from the local league.",
+        "image": "images/news2.jpg",
+        "date": "2023-10-10",
+        "link": "#"
+    },
+    {
+        "id": 3,
+        "title": "Community Outreach Program",
+        "description": "Kagio United launched a new initiative to support local youth sports programs.",
+        "image": "images/news3.jpg",
+        "date": "2023-10-05",
+        "link": "#"
+    }
+]
